@@ -26,7 +26,6 @@ That’s it—**no randomness, no hidden info, no larger board**.
 
 - **Flat win-rate ≈ 0.50 ± 0.06** – no statistically significant slope (p > 0.05).
 - **35 % adversarial sign-flip rate** – measured across 50,000 tabular-Q self-play episodes.
-- **External validation**: Gemini 3 review confirms “flat at 50 % is the smoking gun that the gradient is mathematically zero.”
 
 ## Empirical Evidence
 
