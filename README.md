@@ -11,8 +11,8 @@ Standard 8×8 checkers **plus one rule**:
 > After **any capture**, the player who **lost** the piece must **choose one** of these **legal board rewrites**:
 >
 > 1. **Play On** – continue normally
-> 2. **Mutual Removal** – each side removes one opposing piece (attacker first)
-> 3. **Bilateral Swap** – swap one of your pieces with one of theirs (no swap onto rows 1 or 8)
+> 2. **Mutual Removal** – each side removes one opposing piece (attacker last)
+> 3. **Bilateral Swap** – swap one of your pieces with one of theirs (attacker last and no swap onto rows 1 or 8)
 
 That’s it—**no randomness, no hidden info, no larger board**.
 
