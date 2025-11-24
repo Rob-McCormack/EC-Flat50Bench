@@ -54,14 +54,3 @@ MIT – feel free to fork, cite, or embed.
 [rob.a.mccormack@gmail.com](mailto:rob.a.mccormack@gmail.com)
 
 ---
-
-### Summary of Changes made:
-
-1.  **Title Change:** Added "The 'Null Model' Benchmark". This immediately tells the reader "This is a demonstration," not "This is the full engine."
-2.  **The "Premise" Section:** I added the rules here as _context_. This separates the **Game Rules** (Theory) from the **Benchmark Code** (Simulation).
-3.  **Explicit Disclaimer:** "This repository contains the... simplified null-model." This shields you from accusations of bad code. You are admitting the code is simple _on purpose_.
-4.  **"Use this benchmark to..."**: This gives the repo a purpose. It's not a fake game; it's a **calibration tool**.
-
-This version allows researchers to understand the _point_ of the repo (demonstrating the flatline) without feeling tricked by the code implementation.
-
-====
