@@ -13,7 +13,7 @@ A reproducible **null-hypothesis benchmark** demonstrating the statistical signa
 
 ## The Benchmark
 
-This repository contains the **Canonical Failure Mode** implementation. It is a simplified **null-model** (randomized reward baseline) that reproduces the exact empirical pattern predicted for the full game:
+This repository contains a stochastic baseline script, NOT a full game engine. It generates the statistical pattern that our theory predicts for Entropy Checkers. It is a simplified **null-model** (randomized reward baseline) that reproduces the exact empirical pattern predicted for the full game:
 
 1.  **Flat win-rate ≈ 0.50 ± 0.06** – No upward trend after 50k episodes.
 2.  **35% Adversarial Sign-Flip Rate** – The "noise floor" of the system.
@@ -33,6 +33,20 @@ _Figure 1: The "Dead Signal." This flatline represents the maximum possible perf
 ![Flat Learning Curve](figures/ec_flat_curve.png)
 
 **CSV:** [ec_flat_curve.csv](data/ec_flat_curve.csv) – (50,000 episodes of flatline convergence).
+
+## The Open Question
+
+**Can Optimization Be Defined Here?** We challenge the community to design an agent that outperforms this null model. However, we caution that this may be a **category error**.
+
+Our hypothesis is that:
+
+"_the moment you inject a win-probability or value-function into EC, the experiment stops being about EC and starts being about "EC-plus-your-metric._"
+
+Because the rules allow the opponent to retroactively invalidate the strategic meaning of board states, no metric survives the next entropy choice. Therefore, any "proof" of optimization would testify only to your specific metric, not to the game itself.
+
+The interesting question isn’t "Can AI optimize in EC?" but "Why can’t we define what optimization means here?"
+
+Use this benchmark as the "_Noise Floor._" If your complex agent cannot statistically distinguish itself from this randomized baseline, it suggests you have encountered the Competence Ceiling predicted by our theory.
 
 ## Cite This Work
 
