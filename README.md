@@ -34,6 +34,22 @@ _Figure 1: The "Dead Signal." This flatline represents the maximum possible perf
 
 **CSV:** [ec_flat_curve.csv](data/ec_flat_curve.csv) – (50,000 episodes of flatline convergence).
 
+### The Handicap/Cheating Paradox
+
+To illustrate the severity of the competence ceiling, consider this thought experiment regarding material advantage:
+
+**In Chess**: If a player cheated to start with two extra Queens, they would easily defeat a Grandmaster (or even Stockfish). Material advantage is decisive and compounds.
+
+**In Entropy Checkers**: A player who starts with "God Mode" (extra Kings) sees win-rate improvements of only ~1-2%—barely distinguishable from noise.
+
+**Why?** In EC, material advantage is a structural liability. Each extra piece simply provides the opponent with:
+
+- **Additional targets** for Mutual Removal
+- **More coordinates** for Bilateral Swap disruption
+- **Increased vulnerability** to adversarial cancellation
+
+The game's physics systematically dampen advantages back to equilibrium. **Even "cheating" fails to overcome the structural friction designed into EC's rules.**
+
 ## The Open Question
 
 **Can Optimization Be Defined Here?** We challenge the community to design an agent that outperforms this null model. However, we caution that this may be a **category error**.
