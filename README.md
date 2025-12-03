@@ -9,7 +9,7 @@
 
 **EC-Flat50Bench** is a reproducible stochastic baseline designed to quantify **Adversarial Causal Decoupling** in Reinforcement Learning.
 
-It simulates the statistical signature of **Entropy Checkers (EC)**—a deterministic environment where the opponent possesses legal authority to retroactively invert state value post-capture. This repository provides the "Null Model": a tabular Q-learning agent operating against an entropy distribution that mimics the EC game mechanics, demonstrating that standard optimization methods are structurally forced to plateau at random performance.
+It simulates the statistical signature of **Entropy Checkers (EC)**—a deterministic environment where the opponent possesses legal authority to retroactively invert state value post-capture. This repository provides the "Null Model": a tabular Q-learning agent operating against an entropy distribution that mimics the EC game mechanics, demonstrating that standard optimization methods are structurally forced to plateau at random performance. (**See Rules below**)
 
 ## 2. Theoretical Premise
 
@@ -65,7 +65,45 @@ Use this benchmark to calibrate full EC game engines.
 **Can Optimization Be Defined Here?**
 We challenge the community to design an agent that outperforms this null model. We hypothesize that EC represents a class of **"Optimization-Flat"** systems where the objective function is structurally decoupled from the action space. Any "proof" of optimization in this domain likely testifies to the metric's bias rather than the agent's control.
 
-## 6\. Citation
+## 6. d Entropy Checkers (EC)
+
+## Setup & Basic Play
+
+- Standard 8×8 checkers board and American checkers rules
+- Captures are mandatory (must jump when possible)
+- Win by capturing all opponent pieces or leaving them with no legal moves
+
+## The Entropy Mechanic
+
+After you lose a piece (including multi-jump captures), immediately choose **ONE**:
+
+### 1. Play On
+
+No special action; continue normal play
+
+### 2. Mutual Removal
+
+Two steps:
+
+- You remove one opponent's piece
+- If this removes their last piece, you win immediately (no counter-removal)
+- They then remove one of your pieces
+
+### 3. Bilateral Swap
+
+Two steps, different pieces each:
+
+- You swap one of your pieces with one of theirs
+- They then swap one of their pieces with one of yours
+- No piece may be swapped onto rows 1 or 8
+- Pieces retain their man/king status after swapping
+
+## Draw Conditions
+
+- **Threefold repetition:** Same position occurs three times with same player to move
+- **50-move rule:** 50 moves pass without a capture, Mutual Removal, or man promotion (Bilateral Swaps don't reset this counter)
+
+## 7\. Citation
 
 If you use this benchmark in research regarding AI Safety, Goodhart's Law, or RL Robustness, please cite:
 
