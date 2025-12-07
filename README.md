@@ -1,116 +1,182 @@
 # EC-Flat50Bench: Adversarial Gradient Erasure Benchmark
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Rob-McCormack/EC-Flat50Bench/blob/main/notebook/EC_Cancellation_Bench.ipynb)
+> Entropy Checkers (EC) - a deterministic checkers variant.
 
-**Status:** Active Research / Null-Model Baseline  
+**EC is standard checkers with one destabilizing rule:**
+
+_After any capture, the player who lost the piece must choose from an entropy menu (Play On, Mutual Piece Removal, or Bilateral Piece Swap)._ **Detailed rules below.**
+
+---
+
+**Status:** Active Research / Multi-Armed Bandit Benchmark  
 **License:** MIT
 
-## 1. Overview
+> **A minimal Multi-Armed Bandit benchmark demonstrating that adversarial reward inversion creates a fundamental barrier to optimization, even in deterministic environments.**
 
-**EC-Flat50Bench** is a reproducible stochastic baseline designed to quantify **Adversarial Causal Decoupling** in Reinforcement Learning.
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1VEfDcKZgFpCUYC2VUqQrVH1ZEs1XWrAf?usp=sharing)
 
-It simulates the statistical signature of **Entropy Checkers (EC)**—a deterministic environment where the opponent possesses legal authority to retroactively invert state value post-capture. This repository provides the "Null Model": a tabular Q-learning agent operating against an entropy distribution that mimics the EC game mechanics, demonstrating that standard optimization methods are structurally forced to plateau at random performance. (**See Rules below**)
+---
+
+**Entropy Checkers (EC)** is a deterministic, perfect-information 8×8 checkers variant that inflicts three symmetrical failures on any intelligence—human or artificial—attempting to optimize it:
+
+- **Causal Amnesia** (Past) – The defender's rewrite retroactively nullifies the strategic meaning of prior actions.
+- **Causal Seduction** (Present) – Quiet intervals lure agents into "normal" captures that trigger catastrophic inversion.
+- **Causal Lockout** (Future) – The defender alone collapses the future superposition, making planning adversarially unsteerable.
+
+**Same code. Same reward. Same learner.**  
+**Entropy rule on → dead. Entropy rule off → wins.**
+
+![Adversarial Reward Inversion](figures/ec_3_curves.png)
+
+**These failures are not speculation.** Tabular Q-learning trained for 50,000+ episodes against both stochastic and fully deterministic cyclic adversaries converges to a **50.0% ± 0.06 win-rate** with a **~38% immediate value sign-flip rate**. No tested optimizer has ever broken this ceiling.
+
+This flatline is the conclusive signature of a system where optimization gradients are definitionally erased by the protocol itself.
+
+---
+
+## 1. Overview: The Multi-Armed Bandit Pivot
+
+**EC-Flat50Bench** reduces the complexity of the full game (an MDP) to a minimal **Multi-Armed Bandit (MAB)** problem. This isolates the reward dynamics from positional complexity to ask a fundamental question:
+
+_Can optimization survive when rewards are adversarially inverted?_
+
+We abstract the state space to a single global context to test three distinct Null Models:
+
+1.  **Mode A: CLASSICAL (The Control)**
+
+    - **Mechanism:** Standard Checkers physics. Captures yield material advantage.
+    - **Hypothesis:** The agent should learn the optimal policy and achieve >90% win rate.
+    - **Result:** **VALIDATED (Green Line)**. The code works; the agent optimizes successfully.
+
+2.  **Mode B: STOCHASTIC (Fragility Test)**
+
+    - **Mechanism:** Captures trigger a random "Board Rewrite" (Swap/Remove/Play On).
+    - **Hypothesis:** The learning gradient will be drowned in noise.
+    - **Result:** **FLATLINE (Blue Line)**.
+
+3.  **Mode C: DETERMINISTIC (Structure Test)**
+    - **Mechanism:** Captures trigger a fixed, clockwork cycle of rewrites ($0 \to 1 \to 2$).
+    - **Hypothesis:** Even with perfect predictability, the structural penalty of the rewrite erases the advantage of the capture.
+    - **Result:** **FLATLINE (Red Line)**.
+
+**Critical Finding:** Both random _and predictable_ entropy produce identical flatlines. This proves the failure is **structural**, not due to unpredictability.
+
+|                            | Classical (Control) | Entropy Modes                  |
+| -------------------------- | ------------------- | ------------------------------ |
+| **Optimization Possible?** | ✅ Yes              | ❌ No                          |
+| **Peak Performance**       | 93%                 | ≤55%                           |
+| **Learning Gradient**      | Strong & Positive   | Erased                         |
+| **Interpretation**         | Agent succeeds      | Structure defeats intelligence |
 
 ## 2. Theoretical Premise
 
-**Entropy Checkers** is designed as a counter-example to the Reward Hypothesis in deterministic settings.
+### The Handicap/Cheating Paradox (Conceptual Proof)
 
-- **The Mechanism:** Mandatory capture events trigger a "Board Rewrite" (Mutual Removal or Bilateral Swap) selected by the adversary.
-- **The Prediction:** Because the adversary can minimize the realized value of a chosen action $a_t$ _after_ it is taken, the correlation between $a_t$ and $r_{t+1}$ approaches zero.
-- **The Metric:** We measure the **Sign-Flip Rate**—the frequency with which a state evaluated as positive ($V>0$) transitions to a negative value ($V<0$) on the immediate next ply.
+A unique property of EC is the **Inversion of Advantage**.
 
-_(For the full theoretical abstract and arguments regarding Causal 3-Vector Collapse, please see [THEORY.md](THEORY.md))_
+- **In Chess:** A **competent** player given a material handicap (e.g., an extra Queen) or the ability to **cheat** (e.g., illegally promoting a pawn) is statistically guaranteed to defeat even a superhuman engine. Advantage is monotonic; more power = higher win rate.
+- **In EC:** A player starting with extra Kings or **cheating to gain material** does not gain a guaranteed win. Instead, they provide the adversary with high-value targets for **Mutual Removal** or **Bilateral Swap**. The "cheating" player simply creates a larger lever for the opponent to use against them.
+
+This suggests that EC violates the **Monotonicity Principle**: having "more" is not strictly "better," rendering standard evaluation functions (which assume monotonicity) structurally invalid.
+
+### The Causal 3-Vector
+
+In standard games, a move has a scalar payoff (e.g., $+1$). In EC, a capture exists as a **3-Vector** of mutually exclusive deterministic futures:
+$$\text{Credit}(a_t) = \langle \text{Play On}, \text{Removal}, \text{Swap} \rangle \approx \langle +1.0, +0.1, -1.0 \rangle$$
+
+Immediately after the action, the adversary collapses this vector to its worst component. Standard RL assumes actions have persistent scalar shadows; EC proves that in systems with **Adversarial Causal Decoupling**, the shadow is crushed before the gradient can update.
+
+### Methodology: The "Strategic Proxy"
+
+To rigorously test this in a simplified benchmark, we implement a **Strategic Proxy** for the "Swap" mechanic.
+
+- **Naive Material Metric:** In a naive view, swapping two pieces doesn't change the piece count. An agent optimizing for this would falsely believe it is "safe."
+- **Strategic Reality:** In the real game, Swapping destroys position.
+- **The Implementation:** We model this by assigning a **Negative Reward (-1)** when the Entropy Logic selects "Swap." This is not "rigging" the result; it is **faithfully modeling the adversary**. It tests whether the agent can optimize for survival when the environment actively selects the negative outcome.
+
+_(For full arguments, see [THEORY.md](THEORY.md))_
 
 ## 3. The Benchmark Results
 
-This repository reproduces the empirical pattern predicted for the full EC environment:
+We observe the **"Golden Gap"**—the divergence between the Control Group (Classical) and the Experimental Groups (Entropy).
 
-| Metric                    | Standard Checkers | EC-Flat50 (This Bench) |
-| :------------------------ | :---------------- | :--------------------- |
-| **Win-Rate Convergence**  | > 90%             | **50.0% (± 0.06)**     |
-| **Adversarial Sign-Flip** | < 2%              | **~35%**               |
-| **Learning Gradient**     | Logarithmic       | **Flat / Oscillating** |
+| Metric              | Classical (Control)    | Stochastic (Noise) | Deterministic (Cycle) |
+| :------------------ | :--------------------- | :----------------- | :-------------------- |
+| **Win-Rate (Mean)** | **76.0%** (Max 93%)    | **49.6%**          | **50.6%**             |
+| **Learning Curve**  | **Climbing** (Success) | **Flat** (Failure) | **Flat** (Failure)    |
+| **Sign-Flip Rate**  | < 1%                   | ~35%               | ~38%                  |
+
+### Limitations & Scope
+
+This benchmark demonstrates **adversarial reward inversion** in a simplified setting. It does not prove the full 8×8 EC is unsolvable, but shows why traditional optimization must fail. The results establish a **lower bound**: if agents cannot overcome reward inversion here, they cannot solve the full game.
 
 ### Visual Evidence
 
-The learning curve below illustrates the **Competence Ceiling**. Despite 50,000 episodes of training, the agent fails to extract a policy better than random noise.
+The graph below demonstrates **Structural Gradient Erasure**. The Green Line proves the agent is intelligent. The Red/Blue lines prove that **Structure dominates Intelligence**.
 
-![Flat Learning Curve](figures/ec_flat_curve.png)
-
-**Raw Data:** [`data/ec_flat_curve.csv`](data/ec_flat_curve.csv)
+**Raw Data:** [`data/`](data/)
 
 ## 4. Usage Guide
 
 ### Quick Verification (Browser)
 
-Click the **Open In Colab** badge above to run the full training loop in your browser.
+Click the **Open In Colab** badge above to run the full suite in your browser. The script includes a configuration switch:
 
-### Local Installation
-
-```bash
-git clone [https://github.com/Rob-McCormack/EC-Flat50Bench.git](https://github.com/Rob-McCormack/EC-Flat50Bench.git)
-cd EC-Flat50Bench
-pip install -r requirements.txt
+```python
+# CONFIGURATION
+# "CLASSICAL"     = Control Group (Should Climb)
+# "STOCHASTIC"    = Random Entropy (Fragility Test)
+# "DETERMINISTIC" = Cyclic Entropy (Structure Test)
+BENCHMARK_MODE = "CLASSICAL"
 ```
 
 ### Interpretation
 
-Use this benchmark to calibrate full EC game engines.
+- **Classical Mode:** Should climb (\>70% win rate). Proves the agent can learn.
+- **Entropy Modes:** Should flatline (\~50% win rate). Proves adversarial inversion destroys learning.
 
-- **The Noise Floor:** This benchmark establishes the baseline for "Optimization Failure."
-- **Success Criterion:** If a complex agent (e.g., AlphaZero) cannot achieve a win-rate statistically distinguishable from this benchmark ($>55\%$), it indicates the agent is suffering from structural gradient erasure.
+If your algorithm exceeds 55% win rate in Stochastic/Deterministic modes using this proxy, please contact us—this would be a significant finding.
 
-## 5\. Research Implications
+## 5\. Open Research Questions
 
-**Can Optimization Be Defined Here?**
-We challenge the community to design an agent that outperforms this null model. We hypothesize that EC represents a class of **"Optimization-Flat"** systems where the objective function is structurally decoupled from the action space. Any "proof" of optimization in this domain likely testifies to the metric's bias rather than the agent's control.
+1.  **Detection:** Can an agent recognize when it's in an "EC-like" environment (Reward Inversion) before optimization becomes harmful?
+2.  **Meta-Optimization:** What algorithms could adapt their optimization strategy when the transition function is adversarial?
+3.  **Safety Implications:** How do we build AI that "gives up correctly" when optimization becomes self-defeating?
 
-## 6. d Entropy Checkers (EC)
+## 6\. Entropy Checkers: Official Rules
 
-## Setup & Basic Play
+**Setup:** Standard 8×8 board. American Checkers rules. **Captures are Mandatory.**
+**Win Condition:** Eliminate all opponent pieces or leave them with no legal moves.
 
-- Standard 8×8 checkers board and American checkers rules
-- Captures are mandatory (must jump when possible)
-- Win by capturing all opponent pieces or leaving them with no legal moves
+### The Entropy Mechanic
 
-## The Entropy Mechanic
+After **any capture** (including multi-jumps), the player who _lost_ the piece acts as the **Defender** and chooses **ONE** immediate response:
 
-After you lose a piece (including multi-jump captures), immediately choose **ONE**:
+1.  **Play On**
+    - No change. The game continues normally.
+2.  **Mutual Removal** (The Equalizer)
+    - Defender removes 1 Attacker piece.
+    - Attacker removes 1 Defender piece.
+    - _(If this removes the opponent's last piece, the Defender wins immediately)_.
+3.  **Bilateral Swap** (The Inverter)
+    - Defender swaps one of their pieces with one of the Attacker's.
+    - Attacker must then swap one of their pieces with one of the Defender's.
+    - _(Restriction: No swaps onto Row 1 or 8)._
+    - _(Note: Pieces retain their man/king status after swapping)._
 
-### 1. Play On
+### Draw Conditions
 
-No special action; continue normal play
-
-### 2. Mutual Removal
-
-Two steps:
-
-- You remove one opponent's piece
-- If this removes their last piece, you win immediately (no counter-removal)
-- They then remove one of your pieces
-
-### 3. Bilateral Swap
-
-Two steps, different pieces each:
-
-- You swap one of your pieces with one of theirs
-- They then swap one of their pieces with one of yours
-- No piece may be swapped onto rows 1 or 8
-- Pieces retain their man/king status after swapping
-
-## Draw Conditions
-
-- **Threefold repetition:** Same position occurs three times with same player to move
-- **50-move rule:** 50 moves pass without a capture, Mutual Removal, or man promotion (Bilateral Swaps don't reset this counter)
+- **Threefold repetition:** Same position occurs three times with same player to move.
+- **50-move rule:** 50 moves pass without a capture, Mutual Removal, or man promotion. (Bilateral Swaps do **not** reset this counter).
 
 ## 7\. Citation
 
-If you use this benchmark in research regarding AI Safety, Goodhart's Law, or RL Robustness, please cite:
+If you use this benchmark to study AI Safety, Goodhart's Law, or Reward Inversion, please cite:
 
 ```bibtex
 @misc{flat50bench2025,
   author = {McCormack, Rob},
-  title  = {EC-Flat50Bench: A Benchmark for Adversarial Gradient Erasure},
+  title = {EC-Flat50Bench: A Minimal Proxy Benchmark for Adversarial Gradient Erasure},
   year   = {2025},
   url    = {[https://github.com/Rob-McCormack/EC-Flat50Bench](https://github.com/Rob-McCormack/EC-Flat50Bench)}
 }
