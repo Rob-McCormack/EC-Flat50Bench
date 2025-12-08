@@ -26,6 +26,9 @@ _After any capture, the player who lost the piece must choose from an entropy me
 **Same code. Same reward. Same learner.**  
 **Entropy rule on → dead. Entropy rule off → wins.**
 
+---
+
+_The graph below demonstrates **Structural Gradient Erasure**. The Green Line proves the agent is intelligent. The Red/Blue lines prove that **Structure dominates Intelligence**_.
 ![Adversarial Reward Inversion](figures/ec_3_curves.png)
 
 **These failures are not speculation.** Tabular Q-learning trained for 50,000+ episodes against both stochastic and fully deterministic cyclic adversaries converges to a **50.0% ± 0.06 win-rate** with a **~38% immediate value sign-flip rate**. No tested optimizer has ever broken this ceiling.
@@ -86,6 +89,14 @@ $$\text{Credit}(a_t) = \langle \text{Play On}, \text{Removal}, \text{Swap} \rang
 
 Immediately after the action, the adversary collapses this vector to its worst component. Standard RL assumes actions have persistent scalar shadows; EC proves that in systems with **Adversarial Causal Decoupling**, the shadow is crushed before the gradient can update.
 
+### The Postmortem Paradox (Epistemic Proof)
+
+In Chess, you can review a game and identify blunders: _"Move 23 was losing because it allowed a forced mate."_ In EC, retrospective analysis is structurally impossible.
+
+- **Mid-game assessment:** You capture a piece on move 15; the defender chooses **Swap** and you lose three moves later. Was move 15 a blunder? **You cannot know**—had they chosen **Play On**, it might have been winning. The "error" is not in the move but in the adversary's choice, which is strategic, not random.
+- **Database futility:** Even with 1M human games, statistical labeling fails. Move X might win in 500K games where opponents optimize differently than in the 500K where it loses. The conditional $P(\text{win}|\text{Move X})$ is confounded by adversarial entropy strategy, not noise.
+- **Consequence:** This is not just a failure of forward optimization—it's a failure of **epistemic learning**. Both human analysts and ML systems are blinded for the same reason: outcome labels are adversarially contaminated at the protocol level.
+
 ### Methodology: The "Strategic Proxy"
 
 To rigorously test this in a simplified benchmark, we implement a **Strategic Proxy** for the "Swap" mechanic.
@@ -109,10 +120,6 @@ We observe the **"Golden Gap"**—the divergence between the Control Group (Clas
 ### Limitations & Scope
 
 This benchmark demonstrates **adversarial reward inversion** in a simplified setting. It does not prove the full 8×8 EC is unsolvable, but shows why traditional optimization must fail. The results establish a **lower bound**: if agents cannot overcome reward inversion here, they cannot solve the full game.
-
-### Visual Evidence
-
-The graph below demonstrates **Structural Gradient Erasure**. The Green Line proves the agent is intelligent. The Red/Blue lines prove that **Structure dominates Intelligence**.
 
 **Raw Data:** [`data/`](data/)
 
