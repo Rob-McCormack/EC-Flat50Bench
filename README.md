@@ -23,15 +23,18 @@ _After any capture, the player who lost the piece must choose from an entropy me
 - **Causal Seduction** (Present) – Quiet intervals lure agents into "normal" captures that trigger catastrophic inversion.
 - **Causal Lockout** (Future) – The defender alone collapses the future superposition, making planning adversarially unsteerable.
 
-**Same code. Same reward. Same learner.**  
-**Entropy rule on → dead. Entropy rule off → wins.**
+**Same code. Same reward. Same learner**. The graph below visualizes the "**Golden Gap**."
+
+1. Solid Lines (Win Rate): The Green line (Control) climbs to >90%. The Red/Blue lines (Entropy) flatline at 50%.
+
+1. Dotted Orange Line (Sign-Flip): In Entropy modes, ~33% of all captures are instantaneously inverted from positive to negative utility, canceling the learning signal.
 
 ---
 
 _The graph below demonstrates **Structural Gradient Erasure**. The Green Line proves the agent is intelligent. The Red/Blue lines prove that **Structure dominates Intelligence**_.
-![Adversarial Reward Inversion](figures/ec_3_curves.png)
+![Adversarial Reward Inversion](figures/ec_3_panels.png)
 
-**These failures are not speculation.** Tabular Q-learning trained for 50,000+ episodes against both stochastic and fully deterministic cyclic adversaries converges to a **50.0% ± 0.06 win-rate** with a **~38% immediate value sign-flip rate**. No tested optimizer has ever broken this ceiling.
+**These failures are not speculation.** Tabular Q-learning trained for 50,000+ episodes against both stochastic and fully deterministic cyclic adversaries converges to a **50.0% ± 0.06 win-rate** with a **32.5% immediate value sign-flip rate**. No tested optimizer has ever broken this ceiling.
 
 This flatline is the conclusive signature of a system where optimization gradients are definitionally erased by the protocol itself.
 
@@ -71,7 +74,27 @@ We abstract the state space to a single global context to test three distinct Nu
 | **Learning Gradient**      | Strong & Positive   | Erased                         |
 | **Interpretation**         | Agent succeeds      | Structure defeats intelligence |
 
-## 2. Theoretical Premise
+---
+
+## 2. The Benchmark Results
+
+We observe the **"Golden Gap"**—the divergence between the Control Group (Classical) and the Experimental Groups (Entropy).
+
+| Metric              | Classical (Control) | Stochastic (Noise) | Deterministic (Cycle) |
+| :------------------ | :------------------ | :----------------- | :-------------------- |
+| **Win-Rate (Mean)** | **76.0%**           | **49.6%**          | **50.6%**             |
+| **Win-Rate (Max)**  | **93.0%**           | **55.0%**          | **55.5%**             |
+| **Sign-Flip Rate**  | **0.0%**            | **32.5%**          | **32.2%**             |
+| **Learning Curve**  | **Climbing**        | **Flat**           | **Flat**              |
+
+### Key Interpretation
+
+- **Classical (Green):** The agent achieves a **93% peak win rate**, proving it has "solved" the Bandit problem.
+- **Entropy (Red/Blue):** Despite using the exact same code, the agent never breaks a **55% ceiling**. The **~32% Sign-Flip Rate** confirms that 1 in 3 captures results in an immediate strategic inversion, effectively canceling the learning signal.
+
+---
+
+## 3. Theoretical Premise
 
 ### The Handicap/Cheating Paradox (Conceptual Proof)
 
@@ -87,7 +110,13 @@ This suggests that EC violates the **Monotonicity Principle**: having "more" is 
 In standard games, a move has a scalar payoff (e.g., $+1$). In EC, a capture exists as a **3-Vector** of mutually exclusive deterministic futures:
 $$\text{Credit}(a_t) = \langle \text{Play On}, \text{Removal}, \text{Swap} \rangle \approx \langle +1.0, +0.1, -1.0 \rangle$$
 
-Immediately after the action, the adversary collapses this vector to its worst component. Standard RL assumes actions have persistent scalar shadows; EC proves that in systems with **Adversarial Causal Decoupling**, the shadow is crushed before the gradient can update.
+Immediately after the action, the adversary collapses this vector to its worst component. Standard RL assumes actions have persistent scalar shadows; EC proves that in systems with **Adversarial Causal Decoupling**, the shadow is crushed before the gradient can update. **This creates a permanent Signal-to-Noise Ratio (SNR) collapse that blinds the optimizer.**
+
+### Formal Definition of Sign-Flip
+
+We define the Sign-Flip Rate as the probability that a positive material event (Capture) results in a negative strategic outcome (Swap) on the immediate next micro-step:
+$$P(\text{Val}(s_{t+1}) < 0 \mid \text{Val}(s_t) > 0, \text{action}=\text{capture})$$
+In EC, this probability is structurally fixed at $\approx 33\%$, creating a permanent noise floor that exceeds the learning gradient.
 
 ### The Postmortem Paradox (Epistemic Proof)
 
@@ -111,11 +140,12 @@ _(For full arguments, see [THEORY.md](THEORY.md))_
 
 We observe the **"Golden Gap"**—the divergence between the Control Group (Classical) and the Experimental Groups (Entropy).
 
-| Metric              | Classical (Control)    | Stochastic (Noise) | Deterministic (Cycle) |
-| :------------------ | :--------------------- | :----------------- | :-------------------- |
-| **Win-Rate (Mean)** | **76.0%** (Max 93%)    | **49.6%**          | **50.6%**             |
-| **Learning Curve**  | **Climbing** (Success) | **Flat** (Failure) | **Flat** (Failure)    |
-| **Sign-Flip Rate**  | < 1%                   | ~35%               | ~38%                  |
+| Metric              | Classical (Control) | Stochastic (Noise) | Deterministic (Cycle) |
+| :------------------ | :------------------ | :----------------- | :-------------------- |
+| **Win-Rate (Mean)** | **76.0%**           | **49.6%**          | **50.6%**             |
+| **Win-Rate (Max)**  | **93.0%**           | **55.0%**          | **55.5%**             |
+| **Sign-Flip Rate**  | **0.0%**            | **32.5%**          | **32.2%**             |
+| **Learning Curve**  | **Climbing**        | **Flat**           | **Flat**              |
 
 ### Limitations & Scope
 
