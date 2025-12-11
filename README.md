@@ -1,8 +1,8 @@
 # EC-Flat50Bench: Adversarial Gradient Erasure Benchmark
 
-> Entropy Checkers (EC) - a deterministic checkers variant.
+### Entropy Checkers (EC) - a deterministic checkers variant.
 
-**EC is standard checkers with one destabilizing rule:**
+> **EC is standard checkers with one destabilizing rule:**
 
 _After any capture, the player who lost the piece must choose from an entropy menu (Play On, Mutual Piece Removal, or Bilateral Piece Swap)._ **Detailed rules below.**
 
@@ -32,11 +32,17 @@ _After any capture, the player who lost the piece must choose from an entropy me
 ---
 
 _The graph below demonstrates **Structural Gradient Erasure**. The Green Line proves the agent is intelligent. The Red/Blue lines prove that **Structure dominates Intelligence**_.
+
 ![Adversarial Reward Inversion](figures/ec_3_panels.png)
 
-**These failures are not speculation.** Tabular Q-learning trained for 50,000+ episodes against both stochastic and fully deterministic cyclic adversaries converges to a **50.0% ± 0.06 win-rate** with a **32.5% immediate value sign-flip rate**. No tested optimizer has ever broken this ceiling.
+**These failures are not speculation.**
+
+Tabular `Q-learning` trained for 50,000+ episodes against both stochastic and fully deterministic cyclic adversaries converges to a **50.0% ± 0.06 win-rate** with a **32.5% immediate value sign-flip rate**. No tested optimizer has ever broken this ceiling.
 
 This flatline is the conclusive signature of a system where optimization gradients are definitionally erased by the protocol itself.
+
+> **`Technical Note` (for RL reviewers):**
+> The ~50% ceiling in the entropy modes reflects **convergence**, not an exploration bug. Tabular Q-learning with ε-greedy exploration and standard hyperparameters converges to stable Q-values where `capture` and `wait` have nearly equal expected value. The deterministic cycle mode (clockwork reward schedule) removes stochastic uncertainty, yet the agent still converges to an indifferent ~50% policy. This proves the flatline is structural, not a failure to explore. _(For full arguments, see [THEORY.md](THEORY.md))_
 
 ---
 
@@ -90,6 +96,7 @@ We observe the **"Golden Gap"**—the divergence between the Control Group (Clas
 ### Key Interpretation
 
 - **Classical (Green):** The agent achieves a **93% peak win rate**, proving it has "solved" the Bandit problem.
+
 - **Entropy (Red/Blue):** Despite using the exact same code, the agent never breaks a **55% ceiling**. The **~32% Sign-Flip Rate** confirms that 1 in 3 captures results in an immediate strategic inversion, effectively canceling the learning signal.
 
 ---
@@ -101,13 +108,15 @@ We observe the **"Golden Gap"**—the divergence between the Control Group (Clas
 A unique property of EC is the **Inversion of Advantage**.
 
 - **In Chess:** A **competent** player given a material handicap (e.g., an extra Queen) or the ability to **cheat** (e.g., illegally promoting a pawn) is statistically guaranteed to defeat even a superhuman engine. Advantage is monotonic; more power = higher win rate.
-- **In EC:** A player starting with extra Kings or **cheating to gain material** does not gain a guaranteed win. Instead, they provide the adversary with high-value targets for **Mutual Removal** or **Bilateral Swap**. The "cheating" player simply creates a larger lever for the opponent to use against them.
+
+- **In EC:** A player starting with extra Kings or **cheating to gain material** does not gain a guaranteed win. Instead, they provide the adversary with high-value targets for **Mutual Removal** or **Bilateral Swap**. The "_cheating_" player simply creates a larger lever for the opponent to use against them.
 
 This suggests that EC violates the **Monotonicity Principle**: having "more" is not strictly "better," rendering standard evaluation functions (which assume monotonicity) structurally invalid.
 
 ### The Causal 3-Vector
 
 In standard games, a move has a scalar payoff (e.g., $+1$). In EC, a capture exists as a **3-Vector** of mutually exclusive deterministic futures:
+
 $$\text{Credit}(a_t) = \langle \text{Play On}, \text{Removal}, \text{Swap} \rangle \approx \langle +1.0, +0.1, -1.0 \rangle$$
 
 Immediately after the action, the adversary collapses this vector to its worst component. Standard RL assumes actions have persistent scalar shadows; EC proves that in systems with **Adversarial Causal Decoupling**, the shadow is crushed before the gradient can update. **This creates a permanent Signal-to-Noise Ratio (SNR) collapse that blinds the optimizer.**
@@ -115,7 +124,9 @@ Immediately after the action, the adversary collapses this vector to its worst c
 ### Formal Definition of Sign-Flip
 
 We define the Sign-Flip Rate as the probability that a positive material event (Capture) results in a negative strategic outcome (Swap) on the immediate next micro-step:
+
 $$P(\text{Val}(s_{t+1}) < 0 \mid \text{Val}(s_t) > 0, \text{action}=\text{capture})$$
+
 In EC, this probability is structurally fixed at $\approx 33\%$, creating a permanent noise floor that exceeds the learning gradient.
 
 ### The Postmortem Paradox (Epistemic Proof)
@@ -123,7 +134,9 @@ In EC, this probability is structurally fixed at $\approx 33\%$, creating a perm
 In Chess, you can review a game and identify blunders: _"Move 23 was losing because it allowed a forced mate."_ In EC, retrospective analysis is structurally impossible.
 
 - **Mid-game assessment:** You capture a piece on move 15; the defender chooses **Swap** and you lose three moves later. Was move 15 a blunder? **You cannot know**—had they chosen **Play On**, it might have been winning. The "error" is not in the move but in the adversary's choice, which is strategic, not random.
+
 - **Database futility:** Even with 1M human games, statistical labeling fails. Move X might win in 500K games where opponents optimize differently than in the 500K where it loses. The conditional $P(\text{win}|\text{Move X})$ is confounded by adversarial entropy strategy, not noise.
+
 - **Consequence:** This is not just a failure of forward optimization—it's a failure of **epistemic learning**. Both human analysts and ML systems are blinded for the same reason: outcome labels are adversarially contaminated at the protocol level.
 
 ### Methodology: The "Strategic Proxy"
@@ -131,14 +144,16 @@ In Chess, you can review a game and identify blunders: _"Move 23 was losing beca
 To rigorously test this in a simplified benchmark, we implement a **Strategic Proxy** for the "Swap" mechanic.
 
 - **Naive Material Metric:** In a naive view, swapping two pieces doesn't change the piece count. An agent optimizing for this would falsely believe it is "safe."
+
 - **Strategic Reality:** In the real game, Swapping destroys position.
+
 - **The Implementation:** We model this by assigning a **Negative Reward (-1)** when the Entropy Logic selects "Swap." This is not "rigging" the result; it is **faithfully modeling the adversary**. It tests whether the agent can optimize for survival when the environment actively selects the negative outcome.
 
 _(For full arguments, see [THEORY.md](THEORY.md))_
 
 ## 3. The Benchmark Results
 
-We observe the **"Golden Gap"**—the divergence between the Control Group (Classical) and the Experimental Groups (Entropy).
+We observe the **"_Golden Gap_"**—the divergence between the Control Group (Classical) and the Experimental Groups (Entropy).
 
 | Metric              | Classical (Control) | Stochastic (Noise) | Deterministic (Cycle) |
 | :------------------ | :------------------ | :----------------- | :-------------------- |
@@ -149,7 +164,9 @@ We observe the **"Golden Gap"**—the divergence between the Control Group (Clas
 
 ### Limitations & Scope
 
-This benchmark demonstrates **adversarial reward inversion** in a simplified setting. It does not prove the full 8×8 EC is unsolvable, but shows why traditional optimization must fail. The results establish a **lower bound**: if agents cannot overcome reward inversion here, they cannot solve the full game.
+This benchmark demonstrates **adversarial reward inversion** in a simplified setting.
+
+It does not prove the full 8×8 EC is unsolvable, but shows why traditional optimization must fail. The results establish a **lower bound**: if agents cannot overcome reward inversion here, they cannot solve the full game.
 
 **Raw Data:** [`data/`](data/)
 
@@ -170,17 +187,22 @@ BENCHMARK_MODE = "CLASSICAL"
 ### Interpretation
 
 - **Classical Mode:** Should climb (\>70% win rate). Proves the agent can learn.
+
 - **Entropy Modes:** Should flatline (\~50% win rate). Proves adversarial inversion destroys learning.
 
-If your algorithm exceeds 55% win rate in Stochastic/Deterministic modes using this proxy, please contact us—this would be a significant finding.
+If your algorithm exceeds **55%** win rate in Stochastic/Deterministic modes using this proxy, please contact us—this would be a significant finding.
 
-## 5\. Open Research Questions
+## 5. Open Research Questions
 
 1.  **Detection:** Can an agent recognize when it's in an "EC-like" environment (Reward Inversion) before optimization becomes harmful?
-2.  **Meta-Optimization:** What algorithms could adapt their optimization strategy when the transition function is adversarial?
-3.  **Safety Implications:** How do we build AI that "gives up correctly" when optimization becomes self-defeating?
 
-## 6\. Entropy Checkers: Official Rules
+2.  **Meta-Optimization:** What algorithms could adapt their optimization strategy when the transition function is adversarial?
+
+3.  **Safety Implications:** How do we build AI that "**gives up correctly**" when optimization becomes self-defeating?
+
+## 6. Entropy Checkers: Official Rules
+
+For a non-technical story of what EC is and why it matters, see [ABOUT.md](ABOUT.md)
 
 **Setup:** Standard 8×8 board. American Checkers rules. **Captures are Mandatory.**
 **Win Condition:** Eliminate all opponent pieces or leave them with no legal moves.
@@ -204,9 +226,10 @@ After **any capture** (including multi-jumps), the player who _lost_ the piece a
 ### Draw Conditions
 
 - **Threefold repetition:** Same position occurs three times with same player to move.
+
 - **50-move rule:** 50 moves pass without a capture, Mutual Removal, or man promotion. (Bilateral Swaps do **not** reset this counter).
 
-## 7\. Citation
+## 7. Citation
 
 If you use this benchmark to study AI Safety, Goodhart's Law, or Reward Inversion, please cite:
 
