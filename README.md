@@ -101,6 +101,23 @@ We observe the **"Golden Gap"**—the divergence between the Control Group (Clas
 
 ---
 
+### 2.1 Control Experiment: State Aliasing
+
+To distinguish between learning failure and state aliasing (blindness), we implemented a controlled Bandit experiment comparing a **Blind Agent** (standard abstraction) vs. an **Oracle Agent** (phase-aware) on the deterministic cycle.
+
+[![Open Control Experiment](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1lVXWpfISYEVIJBQtt5QPlrohMghJIbDD?usp=sharing)
+
+---
+
+| Agent Type       | State Visibility       | Mean Score (N=50)  | Interpretation                      |
+| :--------------- | :--------------------- | :----------------- | :---------------------------------- |
+| **Blind Agent**  | 1 State (Standard)     | **-13.42 ± 4.79**  | Flatlines (Cannot distinguish trap) |
+| **Oracle Agent** | 3 States (Phase-Aware) | **585.66 ± 17.94** | Wins (Exploits the cycle)           |
+
+---
+
+**Conclusion:** The flatline in the main benchmark is a result of the agent's representation (state abstraction) effectively averaging the adversarial outcomes. Without a state representation that includes the "Adversarial Phase" (or intent), standard Q-learning is **structurally blinded**.
+
 ## 3. Theoretical Premise
 
 ### The Handicap/Cheating Paradox (Conceptual Proof)

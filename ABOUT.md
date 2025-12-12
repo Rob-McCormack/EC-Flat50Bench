@@ -4,11 +4,10 @@
 
 Entropy Checkers is, at heart, a **children’s game**.
 
-- The rules are just a tiny twist on normal checkers.
-
-- No hidden randomness, no giant search tree on the board.
-
-- A highschool student could have invented it.
+1. no hidden randomness
+1. no need for massive search trees (the entropy rule reduces effective complexity)
+1. The rules are just a tiny twist on normal checkers
+1. A highschool student could have invented it
 
 The benchmark in this repo doesn’t even simulate the full 8×8 game. Instead, it uses about **100 lines of Python** to **abstract the key idea**:
 

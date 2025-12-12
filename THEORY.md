@@ -72,7 +72,50 @@ We use **Strategic Proxy Scoring**:
 
 This tests whether an agent can optimize for survival when the environment actively selects the negative outcome. The empirical result (50% flatline) confirms that standard agents cannot overcome this structural inversion.
 
-## 6. The Determinism Paradox
+## 6. The Metric Fallacy (Why We Avoid Heuristic Simulators)
+
+A common critique of this benchmark is: _"Why not build a full 8x8 simulator with a strong heuristic (e.g., AlphaBeta search with material evaluation) to solve the game?"_
+
+This request is logically circular in the context of Entropy Checkers.
+
+### The "Smuggled Game" Problem
+
+In standard games (like Chess), the **Quality Metric** (Material Advantage) and the **Objective** (Winning) are aligned vectors. If you optimize for Material, you generally approach the Win.
+
+In EC, the Adversarial Swap creates a structural divergence:
+
+- **Metric:** "Capture Pieces" (Material Gain).
+- **Objective:** "Survive" (Avoid the Swap).
+
+The moment we define a heuristic "Quality Metric" (e.g., _Kings = 3 points_) for a simulator, we have **smuggled in a different game.** We are no longer training the agent to play Entropy Checkers; we are training it to play "Metric Checkers"—a game where material is intrinsically good.
+
+```mermaid
+graph LR
+    A[Start Optimization] --> B{Choose Metric}
+    B -->|Material Gain| C[Proxy Metric]
+    B -->|Survival| D[True Objective]
+
+    C --> E[Maximize Captures]
+    D --> F[Avoid Swaps]
+
+    E -- Metric diverges from Goal --> G((The Trap))
+    F -- Metric aligned with Goal --> H((Winning))
+
+    style C fill:#ff9999,stroke:#333,stroke-width:2px
+    style D fill:#99ff99,stroke:#333,stroke-width:2px
+    style G fill:#ff0000,stroke:#333,stroke-width:4px,color:#fff
+```
+
+### Measurement Destroys Validity
+
+Because the "value" of a piece is dependent on the opponent's future choice (which is adversarial), any _a priori_ metric is a hallucination.
+
+- **Valid Simulator:** Must use pure Monte Carlo rollouts to the very end (Win/Loss), which is computationally intractable for the full game.
+- **Invalid Simulator:** Uses a heuristic evaluation. This simulator will "succeed" at optimizing the heuristic, but this success is meaningless because the heuristic itself is the trap.
+
+Therefore, the **Bandit Abstraction** (EC-Flat50Bench) is scientifically superior to a heuristic simulator. The Bandit isolates the reward mechanism without smuggling in a false metric, revealing the raw "Gradient Erasure" effect that heuristic simulators obscure.
+
+## 7. The Determinism Paradox
 
 EC is fully deterministic, yet produces behavior indistinguishable from random outcomes. This reveals that **determinism $\neq$ learnability**.
 
@@ -82,7 +125,7 @@ Traditional assumptions hold that deterministic environments support stable lear
 - The failure is not due to stochastic transitions, but to **adversarial branch selection**.
 - This creates a new class of problems: **Deterministic but Optimization-Resistant Environments**.
 
-## 7. EC as a Formal Model of Metric Corruption (Goodhart's Law)
+## 8. EC as a Formal Model of Metric Corruption (Goodhart's Law)
 
 Goodhart's Law states: _"When a measure becomes a target, it ceases to be a good measure."_ EC formalizes this not as an emergent sociological phenomenon, but as a rule-based guarantee.
 
@@ -92,7 +135,7 @@ $$C(\pi) = \mathbb{E}[\Delta\text{Value} \mid \pi \text{ optimizes for captures}
 
 In EC, because the opponent responds to captures with inversion, $C(\pi)$ becomes strictly positive for any non-random policy. The harder the agent optimizes for the target (Captures), the more frequently it triggers the corruption mechanism (Swaps).
 
-## 8. Related Work & Theoretical Context
+## 9. Related Work & Theoretical Context
 
 EC is not an isolated curiosity; it is a concrete instance of known adversarial structures in control theory and game theory.
 
@@ -100,7 +143,7 @@ EC is not an isolated curiosity; it is a concrete instance of known adversarial 
 2.  **Stackelberg Games:** The entropy phase functions as a _Stackelberg Game_ where the Defender (Follower) observes the Attacker's move (Leader) and commits to the worst-case response.
 3.  **Reward Poisoning:** The mechanics demonstrate _Endogenous Reward Poisoning_, where the agent's own actions corrupt the reward signal, a phenomenon studied in AI Safety as "Wireheading" or "Specification Gaming."
 
-## 9. Implications for AI
+## 10. Implications for AI
 
 1. **AI Safety:** EC demonstrates environments where optimization becomes self-defeating.
 2. **Reinforcement Learning:** It challenges the Reward Hypothesis in adversarial settings.
