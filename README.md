@@ -168,7 +168,7 @@ To rigorously test this in a simplified benchmark, we implement a **Strategic Pr
 
 _(For full arguments, see [THEORY.md](THEORY.md))_
 
-## 3. The Benchmark Results
+## 4. The Benchmark Results
 
 We observe the **"_Golden Gap_"**—the divergence between the Control Group (Classical) and the Experimental Groups (Entropy).
 
@@ -187,7 +187,7 @@ It does not prove the full 8×8 EC is unsolvable, but shows why traditional opti
 
 **Raw Data:** [`data/`](data/)
 
-## 4. Usage Guide
+## 5. Usage Guide
 
 ### Quick Verification (Browser)
 
@@ -209,7 +209,7 @@ BENCHMARK_MODE = "CLASSICAL"
 
 If your algorithm exceeds **55%** win rate in Stochastic/Deterministic modes using this proxy, please contact us—this would be a significant finding.
 
-## 5. Open Research Questions
+## 6. Open Research Questions
 
 1.  **Detection:** Can an agent recognize when it's in an "EC-like" environment (Reward Inversion) before optimization becomes harmful?
 
@@ -217,7 +217,7 @@ If your algorithm exceeds **55%** win rate in Stochastic/Deterministic modes usi
 
 3.  **Safety Implications:** How do we build AI that "**gives up correctly**" when optimization becomes self-defeating?
 
-## 6. Entropy Checkers: Official Rules
+## 7. Entropy Checkers: Official Rules
 
 For a non-technical story of what EC is and why it matters, see [ABOUT.md](ABOUT.md)
 
@@ -246,7 +246,7 @@ After **any capture** (including multi-jumps), the player who _lost_ the piece a
 
 - **50-move rule:** 50 moves pass without a capture, Mutual Removal, or man promotion. (Bilateral Swaps do **not** reset this counter).
 
-## 7. Citation
+## 8. Citation
 
 If you use this benchmark to study AI Safety, Goodhart's Law, or Reward Inversion, please cite:
 
