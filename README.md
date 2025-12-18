@@ -99,6 +99,12 @@ We observe the **"Golden Gap"**—the divergence between the Control Group (Clas
 
 - **Entropy (Red/Blue):** Despite using the exact same code, the agent never breaks a **55% ceiling**. The **~32% Sign-Flip Rate** confirms that 1 in 3 captures results in an immediate strategic inversion, effectively canceling the learning signal.
 
+### Limitations & Scope
+
+This benchmark demonstrates **adversarial reward inversion** in a simplified setting.
+
+It does not prove the full 8×8 EC is unsolvable, but shows why traditional optimization must fail. The results establish a **lower bound**: if agents cannot overcome reward inversion here, they cannot solve the full game.
+
 ---
 
 ### 2.1 Control Experiment: State Aliasing
@@ -191,19 +197,6 @@ _(For full arguments, see [THEORY.md](THEORY.md))_
 ## 4. The Benchmark Results
 
 We observe the **"_Golden Gap_"**—the divergence between the Control Group (Classical) and the Experimental Groups (Entropy).
-
-| Metric              | Classical (Control) | Stochastic (Noise) | Deterministic (Cycle) |
-| :------------------ | :------------------ | :----------------- | :-------------------- |
-| **Win-Rate (Mean)** | **76.0%**           | **49.6%**          | **50.6%**             |
-| **Win-Rate (Max)**  | **93.0%**           | **55.0%**          | **55.5%**             |
-| **Sign-Flip Rate**  | **0.0%**            | **32.5%**          | **32.2%**             |
-| **Learning Curve**  | **Climbing**        | **Flat**           | **Flat**              |
-
-### Limitations & Scope
-
-This benchmark demonstrates **adversarial reward inversion** in a simplified setting.
-
-It does not prove the full 8×8 EC is unsolvable, but shows why traditional optimization must fail. The results establish a **lower bound**: if agents cannot overcome reward inversion here, they cannot solve the full game.
 
 **Raw Data:** [`data/`](data/)
 
