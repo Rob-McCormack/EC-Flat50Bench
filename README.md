@@ -118,6 +118,26 @@ To distinguish between learning failure and state aliasing (blindness), we imple
 
 **Conclusion:** The flatline in the main benchmark is a result of the agent's representation (state abstraction) effectively averaging the adversarial outcomes. Without a state representation that includes the "Adversarial Phase" (or intent), standard Q-learning is **structurally blinded**.
 
+### 2.2 The "Suicide Proof": Ruling Out Randomness
+
+Is the 50% flatline simply result of a random environment? A simple thought experiment proves it is not.
+
+**The Wager:**
+In a true high-entropy coin flip, an agent cannot strategically choose to lose—the outcome is independent of intent.
+
+**The Proof:**
+In EC, an agent can bet **"I will lose this game"** and win that wager 100% of the time by playing anti-optimally.
+
+This proves that causality remains intact for failure. The game does not scramble outcomes; it acts as a **structural intervener** that respects the causality of mistakes while systematically invalidating the causality of strategic success.
+
+> **Paradox:** The only stable causal path in EC is **anti-optimal play**. The "cure" for causal amnesia is to play badly; it is the attempt to win that triggers the erasure.
+
+### 2.3 Distinction: The Distant Horizon vs. The Immediate Singularity
+
+While traditional "anti-computer" games (like _Arimaa_) rely on a **Distant Horizon**—where the solution is valid but hidden behind intractable search depth—EC presents an **Immediate Singularity**.
+
+The "amnesia" is not an asymptotic effect waiting deep in the game tree; it is a structural break that occurs **the moment a capture is initiated**. The causal gradient doesn't just get steep; it is structurally severed.
+
 ## 3. Theoretical Premise
 
 ### The Handicap/Cheating Paradox (Conceptual Proof)
@@ -245,6 +265,8 @@ After **any capture** (including multi-jumps), the player who _lost_ the piece a
 - **Threefold repetition:** Same position occurs three times with same player to move.
 
 - **50-move rule:** 50 moves pass without a capture, Mutual Removal, or man promotion. (Bilateral Swaps do **not** reset this counter).
+
+> **Note on Mechanics:** This dynamic formalizes a principle seen in active security systems (like honeypots), where a successful attack triggers an immediate, automated countermeasure. In EC, this "active defense" is the symmetric, core rule of engagement.
 
 ## 8. Citation
 
