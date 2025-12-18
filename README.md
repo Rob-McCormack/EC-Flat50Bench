@@ -11,7 +11,7 @@ _After any capture, the player who lost the piece must choose from an entropy me
 **Status:** Active Research / Multi-Armed Bandit Benchmark  
 **License:** MIT
 
-> **A minimal Multi-Armed Bandit benchmark demonstrating that adversarial reward inversion creates a fundamental barrier to optimization, even in deterministic environments.**
+> **A minimal benchmark demonstrating that state representation choices can make learnable problems structurally unlearnable—even in deterministic, fully-observable environments.**
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1VEfDcKZgFpCUYC2VUqQrVH1ZEs1XWrAf?usp=sharing)
 
