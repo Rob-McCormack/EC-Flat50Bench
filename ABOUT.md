@@ -7,7 +7,7 @@ Entropy Checkers is, at heart, a **children’s game**.
 1. no hidden randomness
 1. no need for massive search trees (the entropy rule reduces effective complexity)
 1. The rules are just a tiny twist on normal checkers
-1. A highschool student could have invented it
+1. A highschool student could have invented it.
 
 The benchmark in this repo doesn’t even simulate the full 8×8 game. Instead, it uses about **100 lines of Python** to **abstract the key idea**:
 
@@ -22,6 +22,10 @@ On top of that, we put a **very simple learning agent**—basic tabular Q-learni
 1. a **simple learner** trying to figure out whether it should capture or not.
 
 The surprising part is **not** that the code is clever, or that the model is **large** - it’s that **even in this tiny, clean setup, learning gets stuck at ~50%** for structural reasons, **not because the game or the algorithm are complicated**.
+
+### Summary of Significance
+
+This represents a rare category of **"Gradient-Erasing"** deterministic environments. It proves that you can construct a logic puzzle that is immune to Reinforcement Learning. The AI isn't stupid; the game is effectively **"jamming" the AI's radar**, forcing it to fly blind.
 
 ---
 
