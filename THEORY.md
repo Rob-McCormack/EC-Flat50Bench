@@ -124,6 +124,22 @@ Traditional assumptions hold that deterministic environments support stable lear
 - **Structural adversariality** can erase gradients in deterministic systems.
 - The failure is not due to stochastic transitions, but to **adversarial branch selection**.
 - This creates a new class of problems: **Deterministic but Optimization-Resistant Environments**.
+-
+
+### 7.1 The Signal-Noise Indistinguishability Principle
+
+In most games, you can tell the difference between a random opponent and a smart one. Random opponents make mistakes you can exploit; smart opponents create patterns you can learn. **EC erases this distinction.**
+
+After a capture, the defender chooses one of three rewrites. This choice could be:
+
+- A random dice roll
+- A fixed rotation (Play → Remove → Swap → repeat)
+- A superintelligent adversary optimizing your demise
+
+**The result is identical:** A **~33%** chance your winning capture becomes a losing position on the next move.
+
+**Why this matters:**
+If a learning algorithm cannot distinguish between losing to cosmic noise and losing to a superintelligence, then the problem is not the opponent—it is the protocol. The signal (opponent strategy) is indistinguishable from noise because the protocol itself adversarially decouples action from outcome.
 
 ## 8. EC as a Formal Model of Metric Corruption (Goodhart's Law)
 
